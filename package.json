@@ -1,0 +1,25 @@
+{
+  "name": "toecutter",
+  "version": "0.0.0",
+  "description": "A web spider written in JavaScript",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aef-/toecutter.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aef-/toecutter/issues"
+  },
+  "homepage": "https://github.com/aef-/toecutter",
+  "dependencies": {
+    "cheerio": "~0.14.0",
+    "lodash": "~2.4.1",
+    "request": "^2.34.0",
+    "debug": "~0.8.0"
+  }
+}
