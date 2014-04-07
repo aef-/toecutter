@@ -10,6 +10,8 @@ var Page = function( params ) {
     goOutside: false
   };
   this.attempts = 0;
+  this.stepsFromRoot = 0;
+  this.isRunning = false;
   /*
   _.defaults( {
     url: null,
@@ -36,6 +38,7 @@ Page.prototype.fetch = function( ) {
 
   this.attempts += 1;
 
+  this.isRunning = true;
   request( this.url.href, function( err, resp, body ) {
     if( !err && resp.status == 200 ) {
       self.$doc = cheerio.load( body );
@@ -44,9 +47,15 @@ Page.prototype.fetch = function( ) {
     else {
       dfd.reject( new Error( err || "Bad status" ), self );
     }
+
+    self.isRunning = false;
   } );
 
   return dfd.promise;
+};
+
+Page.prototype.isRunning = function( ) {
+  return this.isRunning;
 };
 
 Page.prototype.getLinks = function( ) {

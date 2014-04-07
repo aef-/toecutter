@@ -17,7 +17,9 @@ function ToeCutter( opts ) {
   this.options = {
     retries: 3,
     timeBetweenRetry: 5000, //ms
-    urls: opts
+    timeBetweenRequests: 5000, //ms
+    urls: opts,
+    depth: null
   }; 
 
   this._pages = [ ];
@@ -35,16 +37,9 @@ ToeCutter.prototype.queue = function( url ) {
 
 ToeCutter.prototype.run = function( ) {
   var self = this, 
-      runners = [ ],
       url;
 
-  while( url = this._queue.pop( ) ) {
-    runners.push( this._runSingle( url ) )
-  }
-
-  Q.all( runners ).done( function( ) {
-    console.info( "Done running" );
-  } );
+  this._runSingle( this._queue.shift( ) );
 };
 
 ToeCutter.prototype._runSingle = function( url ) {
@@ -54,16 +49,18 @@ ToeCutter.prototype._runSingle = function( url ) {
 
   console.info( "Running" );
   if( !this._cache[ url ] )
-    this._cache[ url ] = page = new Page( {
-      url: url
-    } );
+    this._cache[ url ] = page = new Page( { url: url } );
   else
     page = this._cache[ url ];
 
-  if( page.getAttempts( ) < this.options.retries ) {
-    fetch = page.fetch( )
-    .done( _.bind( this.onFetchDone, this ), 
-           _.bind( this.onFetchFail, this, page ) );
+  console.info( page.prototype );
+  if( !page.isRunning( ) ) {
+    if( page.getAttempts( ) < this.options.retries )
+      fetch = page.fetch( )
+                  .then( _.bind( this.onFetchDone, this ), 
+                         _.bind( this.onFetchFail, this, page ) );
+    else
+      this.run( );
   }
 
   return fetch;
@@ -71,16 +68,17 @@ ToeCutter.prototype._runSingle = function( url ) {
 
 ToeCutter.prototype.onFetchFail = function( page, err ) {
   var self = this;
-  console.info( "fail" );
   setTimeout( function( ) {
     self._runSingle( page.getUrl( ) );
   }, this.options.timeBetweenRetry );
 };
 
 ToeCutter.prototype.onFetchDone = function( page ) {
-  console.info( "done" );
+  var self = this;
   this.queue( page.getLinks( ) );
-  this.run( );
+  this.setTimeout( function( ) {
+    self.run( );
+  }, this.timeBetweenRequests );
 };
 
 module.exports = ToeCutter;
