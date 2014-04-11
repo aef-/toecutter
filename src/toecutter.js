@@ -46,6 +46,10 @@ ToeCutter.prototype.start = function( ) {
     self.run( );
   }, this.options.timeBetweenRequests );
 };
+ 
+ToeCutter.prototype.stop = function( ) {
+  clearInterval( this._requestTimeoutId );
+};
 
 ToeCutter.prototype.run = function( url ) {
   var self = this, 

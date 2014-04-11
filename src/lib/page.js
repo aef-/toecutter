@@ -5,6 +5,7 @@ var _       = require( 'lodash' ),
     Q       = require( 'q' ),
     request = require( 'request' );
 
+
 var Page = function( opts ) {
   this.options = { 
     goOutside: false
@@ -16,6 +17,8 @@ var Page = function( opts ) {
   this._stepsFromRoot = 0;
   this._isRunning = false;
   this._isFetched = false;
+  this._startTime = null;
+  this._endTime = null;
 
   this._url = parse( this.resolveUrl( this.options.url ) );
  
@@ -28,8 +31,23 @@ Page.prototype.fetch = function( ) {
 
   this._attempts += 1;
   this._isRunning = true;
+  this._startTime = Date.now( );
 
-  request( this._url.href, this.options, function( err, resp, body ) {
+  req = request( this._url.href, this.options );
+  req.on( 'data', function( chunk ) {
+    console.info( chunk.length );
+    req.pause( );
+  } );
+  req.on( 'end', function( ) {
+    console.info( "End" );
+  } );
+  
+  //function( t ) {
+
+   // console.log( t );
+   //  });
+    /*, function( err, resp, body ) {
+    self._endTime = Date.now( );
     if( err ) {
       dfd.reject( new Error( err ), self );
     }
@@ -45,6 +63,7 @@ Page.prototype.fetch = function( ) {
     }
     self._isRunning = false;
   } );
+  */
 
   return dfd.promise;
 };
@@ -55,6 +74,12 @@ Page.prototype.isFetched = function( ) {
 
 Page.prototype.isRunning = function( ) {
   return this._isRunning;
+};
+
+Page.prototype.getTimeElapsed = function( ) {
+  if( this._startTime && this._endTime )
+    return this._endTime - this._startTime;
+  return null;
 };
 
 Page.prototype.getLinks = function( ) {
