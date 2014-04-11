@@ -2,15 +2,9 @@ var _       = require( 'lodash' ),
     helper  = require( './lib/helper' ),
     Page    = require( './lib/page' ),
     Q       = require( 'q' ),
-    debug   = require( 'debug' )( 'toecutter' );
-
-var DEFAULTS = {
-  threads: 4,
-  userAgent: "ToeCutter coming to getcha",
-  delay: 100, //ms
-  obeyRobots: false,
-  goOutside: false //traverse outgoing links
-};
+    util    = require( 'util' ),
+    debug   = require( 'debug' )( 'toecutter' ),
+    EventEmitter = require( 'events' ).EventEmitter;
 
 // TOECUTTER RUNNER
 function ToeCutter( opts ) {
@@ -18,15 +12,24 @@ function ToeCutter( opts ) {
     retries: 3,
     timeBetweenRetry: 5000, //ms
     timeBetweenRequests: 5000, //ms
-    urls: opts,
-    depth: null
+    depth: null,
+    goOutside: false, //traverse outgoing links
+    obeyRobots: false,
+    requestOpts: {
+
+    }
   }; 
+
+  _.assign( this.options, opts );
+
+  this._requestTimeoutId = null;
 
   this._pages = [ ];
   this._cache = { };
-  this._queue = this.options.urls;
+  this._queue = [ ];
 };
 
+util.inherits( ToeCutter, EventEmitter );
 
 ToeCutter.prototype.queue = function( url ) {
   if( typeof url === "string" )
@@ -35,50 +38,59 @@ ToeCutter.prototype.queue = function( url ) {
     _.each( url, this.queue, this );
 };
 
-ToeCutter.prototype.run = function( ) {
-  var self = this, 
-      url;
+ToeCutter.prototype.start = function( ) {
+  var self = this;
 
-  this._runSingle( this._queue.shift( ) );
+  this.run( );
+  this._requestTimeoutId = setInterval( function( ) {
+    self.run( );
+  }, this.options.timeBetweenRequests );
 };
 
-ToeCutter.prototype._runSingle = function( url ) {
-  var self = this, fetch, page;
+ToeCutter.prototype.run = function( url ) {
+  var self = this, 
+      fetch, page;
+
+  url = url || this._queue.shift( );
+
+  if( !url )
+    return;
 
   url = helper.normalizeUrl( url );
 
-  console.info( "Running" );
   if( !this._cache[ url ] )
     this._cache[ url ] = page = new Page( { url: url } );
   else
     page = this._cache[ url ];
 
-  console.info( page.prototype );
-  if( !page.isRunning( ) ) {
+  if( !page.isRunning( ) && !page.isFetched( ) ) {
     if( page.getAttempts( ) < this.options.retries )
+      this.emit( 'start.request', page );
       fetch = page.fetch( )
                   .then( _.bind( this.onFetchDone, this ), 
                          _.bind( this.onFetchFail, this, page ) );
-    else
-      this.run( );
   }
-
-  return fetch;
 };
 
 ToeCutter.prototype.onFetchFail = function( page, err ) {
   var self = this;
+  this.emit( 'fail', page );
+  this.emit( 'end.request', page );
   setTimeout( function( ) {
-    self._runSingle( page.getUrl( ) );
+    self.run( page.getUrl( ) );
   }, this.options.timeBetweenRetry );
 };
 
 ToeCutter.prototype.onFetchDone = function( page ) {
   var self = this;
+  this.emit( 'fetch', page );
   this.queue( page.getLinks( ) );
-  this.setTimeout( function( ) {
+  this.emit( 'end.request', page );
+  /*
+  setTimeout( function( ) {
     self.run( );
-  }, this.timeBetweenRequests );
+  }, this.options.timeBetweenRequests );
+  */
 };
 
 module.exports = ToeCutter;

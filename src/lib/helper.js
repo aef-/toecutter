@@ -1,5 +1,6 @@
-var parse    = require( 'url' ).parse,
+var parse   = require( 'url' ).parse,
     resolve = require( 'url' ).resolve,
+    cheerio = require( 'cheerio' ),
     format  = require( 'url' ).format;
 
 
@@ -21,5 +22,6 @@ module.exports = {
     url = format( url );
 
     return url;
-  }
+  },
+  $: cheerio.load
 }; 

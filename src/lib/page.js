@@ -1,78 +1,77 @@
 var _       = require( 'lodash' ),
     helper  = require( './helper' ),
+    $       = helper.$,
     parse   = require( 'url' ).parse,
     Q       = require( 'q' ),
-    cheerio = require( 'cheerio' ),
     request = require( 'request' );
 
-var Page = function( params ) {
+var Page = function( opts ) {
   this.options = { 
     goOutside: false
   };
-  this.attempts = 0;
-  this.stepsFromRoot = 0;
-  this.isRunning = false;
-  /*
-  _.defaults( {
-    url: null,
-    body: null,
-    headers: null,
-    redirectTo: null,
-    error: null,
-    data: null,
-    responseCode: null,
-    visited: false,
-    referer: null,
-    responseTime: null
-  }, params );
-  */
 
-  this.url = parse( this.resolveUrl( params.url ) );
+  _.assign( this.options, opts );
+
+  this._attempts = 0;
+  this._stepsFromRoot = 0;
+  this._isRunning = false;
+  this._isFetched = false;
+
+  this._url = parse( this.resolveUrl( this.options.url ) );
  
-  this.links = null; //array of links
-  this.$doc = null; //
+  this._links = null; //array of links
+  this.$ = null;
 };
 
 Page.prototype.fetch = function( ) {
   var self = this, req, dfd = Q.defer( );
 
-  this.attempts += 1;
+  this._attempts += 1;
+  this._isRunning = true;
 
-  this.isRunning = true;
-  request( this.url.href, function( err, resp, body ) {
-    if( !err && resp.status == 200 ) {
-      self.$doc = cheerio.load( body );
-      dfd.resolve( self );
+  request( this._url.href, this.options, function( err, resp, body ) {
+    if( err ) {
+      dfd.reject( new Error( err ), self );
     }
     else {
-      dfd.reject( new Error( err || "Bad status" ), self );
+      if( resp.statusCode == 200 || resp.statusCode == 201 ) {
+        self.$ = $( body );
+        dfd.resolve( self );
+      }
+      else {
+        dfd.reject( new Error( 404 ), self );
+      }
+      self._isFetched = true
     }
-
-    self.isRunning = false;
+    self._isRunning = false;
   } );
 
   return dfd.promise;
 };
 
+Page.prototype.isFetched = function( ) {
+  return this._isFetched;
+};
+
 Page.prototype.isRunning = function( ) {
-  return this.isRunning;
+  return this._isRunning;
 };
 
 Page.prototype.getLinks = function( ) {
   var links = [ ], $links, fullUrl, href;
 
-  if( this.links )
-    return this.links
+  if( this._links )
+    return this._links
 
-  this.links = [ ];
-  
-  if( !this.$doc )
-    return this.links;
+  this._links = [ ];
 
-  $links = this.$doc( 'a' );
-  
+  if( !this.$ )
+    return this._links;
+
+  $links = this.$( 'a' );
+
   _.each( $links, function( link ) {
-    href = this.$doc( link ).attr( 'href' );
+    href = this.$( link ).attr( 'href' );
     if( !href || !helper.isUrl( href ) )
       return;
 
@@ -80,29 +79,29 @@ Page.prototype.getLinks = function( ) {
 
     if( this.options.goOutside ||
         ( !this.options.goOutside && 
-          parse( href ).hostname === this.url.hostname ) )
+          parse( href ).hostname === this._url.hostname ) )
       links.push( href );
   }, this );
 
-  this.links = links;
+  this._links = links;
 
-  return this.links;
+  return this._links;
 };
 
 Page.prototype.getUrl = function( url ) {
-  return this.url.href;
+  return this._url.href;
 };
 
 Page.prototype.getAttempts = function( ) {
-  return this.attempts;
+  return this._attempts;
 };
 
 Page.prototype.resolveUrl = function( url ) {
   var info = parse( url );
   if( !info.hostname )
-    info.hostname = this.url.hostname;
+    info.hostname = this._url.hostname;
   if( !info.protocol )
-    info.protocol = this.url.protocol;
+    info.protocol = this._url.protocol;
 
   return helper.normalizeUrl( info );
 };

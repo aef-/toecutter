@@ -23,5 +23,22 @@ if (cluster.isMaster) {
 
 ToeCutter = require( './src/toecutter' );
 
-var tc = new ToeCutter( [ 'http://bsdfasdfasdfuzzfeed.com' ] );
-tc.run( );
+var tc = new ToeCutter( {
+  requestOpts: { },
+  timeBetweenRequests: 1000
+} );
+
+tc.queue( [ 'http://www.buzzfeed.com' ] );
+
+tc.on( 'fetch', function( page ) {
+  console.log( "Fetched:", page.getUrl( ) );
+} );
+tc.on( 'start.request', function( page ) {
+  //console.log( 'Start request', page.getUrl( ) );
+} );
+
+tc.on( 'end.request', function( page ) {
+  //console.log( 'End request', page.getUrl( ) );
+} );
+
+tc.start( );
