@@ -20,6 +20,8 @@ var Page = function( opts ) {
   this._startTime = null;
   this._endTime = null;
 
+  this._request = null;
+
   this._url = parse( this.resolveUrl( this.options.url ) );
  
   this._links = null; //array of links
@@ -33,20 +35,7 @@ Page.prototype.fetch = function( ) {
   this._isRunning = true;
   this._startTime = Date.now( );
 
-  req = request( this._url.href, this.options );
-  req.on( 'data', function( chunk ) {
-    console.info( chunk.length );
-    req.pause( );
-  } );
-  req.on( 'end', function( ) {
-    console.info( "End" );
-  } );
-  
-  //function( t ) {
-
-   // console.log( t );
-   //  });
-    /*, function( err, resp, body ) {
+  this._request = request( this._url.href, this.options, function( err, resp, body ) {
     self._endTime = Date.now( );
     if( err ) {
       dfd.reject( new Error( err ), self );
@@ -63,9 +52,12 @@ Page.prototype.fetch = function( ) {
     }
     self._isRunning = false;
   } );
-  */
 
   return dfd.promise;
+};
+
+Page.prototype.getRequest = function( ) {
+  return this._request;
 };
 
 Page.prototype.isFetched = function( ) {
