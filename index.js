@@ -9,7 +9,6 @@ var tc = new ToeCutter( {
 tc.queue( [ 'http://www.buzzfeed.com' ] );
 
 tc.on( 'fetch', function( page ) {
-  console.log( "Fetched:", page.getUrl( ), page.getTimeElapsed( ) );
 } );
 tc.on( 'start.request', function( page ) {
   page.getRequest( ).pipe( through( function( data ) {
