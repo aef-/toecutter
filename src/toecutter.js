@@ -52,8 +52,8 @@ ToeCutter.prototype.stop = function( ) {
 };
 
 ToeCutter.prototype.run = function( url ) {
-  var self = this, 
-      fetch, page;
+  var self = this,
+      page;
 
   url = url || this._queue.shift( );
 
@@ -63,16 +63,17 @@ ToeCutter.prototype.run = function( url ) {
   url = helper.normalizeUrl( url );
 
   if( !this._cache[ url ] )
-    this._cache[ url ] = page = new Page( { url: url } );
+    page = this._cache[ url ] = new Page( { url: url } );
   else
     page = this._cache[ url ];
 
   if( !page.isRunning( ) && !page.isFetched( ) ) {
-    if( page.getAttempts( ) < this.options.retries )
+    if( page.getAttempts( ) < this.options.retries ) {
+      page.fetch( )
+          .then( _.bind( this.onFetchDone, this ), 
+                 _.bind( this.onFetchFail, this, page ) );
       this.emit( 'start.request', page );
-      fetch = page.fetch( )
-                  .then( _.bind( this.onFetchDone, this ), 
-                         _.bind( this.onFetchFail, this, page ) );
+    }
   }
 };
 
@@ -90,11 +91,6 @@ ToeCutter.prototype.onFetchDone = function( page ) {
   this.emit( 'fetch', page );
   this.queue( page.getLinks( ) );
   this.emit( 'end.request', page );
-  /*
-  setTimeout( function( ) {
-    self.run( );
-  }, this.options.timeBetweenRequests );
-  */
 };
 
 module.exports = ToeCutter;

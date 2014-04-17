@@ -23,7 +23,7 @@ var Page = function( opts ) {
   this._request = null;
 
   this._url = parse( this.resolveUrl( this.options.url ) );
- 
+
   this._links = null; //array of links
   this.$ = null;
 };
