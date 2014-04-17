@@ -21,6 +21,7 @@ A little Node spider.
   * start( )
   * stop( )
   * run( url )
+
 #### Events
   * fetch
   * start.request
@@ -60,6 +61,7 @@ tc.on( 'start.request', function( page ) {
       page.getRequest( ).abort( );
   } ) );
 } );
+```
 
 
 ## TODO
