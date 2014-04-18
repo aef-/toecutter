@@ -68,7 +68,7 @@ Page.prototype.isRunning = function( ) {
   return this._isRunning;
 };
 
-Page.prototype.getTimeElapsed = function( ) {
+Page.prototype.getTimeToFinish = function( ) {
   if( this._startTime && this._endTime )
     return this._endTime - this._startTime;
   return null;
@@ -113,6 +113,7 @@ Page.prototype.getAttempts = function( ) {
   return this._attempts;
 };
 
+//TODO move this to helper
 Page.prototype.resolveUrl = function( url ) {
   var info = parse( url );
   if( !info.hostname )
