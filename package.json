@@ -23,6 +23,7 @@
     "q": "~1.0.1"
   },
   "devDependencies": {
-    "debug": "~0.8.0"
+    "debug": "~0.8.0",
+    "mocha": "~1.18.2"
   }
 }

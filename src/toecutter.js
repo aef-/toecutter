@@ -98,7 +98,7 @@ ToeCutter.prototype.run = function( url ) {
 ToeCutter.prototype.onFetchFail = function( page, err ) {
   var self = this;
 
-  this.emit( 'fail', page, err );
+  this.emit( 'error', page, err );
   setTimeout( function( ) {
     self.run( page.getUrl( ) );
   }, this.options.timeBetweenRetry );

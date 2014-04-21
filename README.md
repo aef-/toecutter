@@ -22,9 +22,9 @@ A little Node spider.
   * run( url )
 
 #### Events
-  * fetch
-  * fail
-  * start.request
+  * "fetch" (page) - on successful fetch
+  * "error" (page, err) - on error (either thrown or status)
+  * "start.request" (page) - when the request is started
 
 ### Page
 ```page``` is passed to each event.
