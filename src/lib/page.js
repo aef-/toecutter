@@ -24,6 +24,10 @@ var Page = function( opts ) {
   this._url = helper.normalizeUrl( this.options.url );
 };
 
+/**
+ * @returns {promise}
+ * @private
+ */
 Page.prototype.fetch = function( ) {
   var self = this, req, dfd = Q.defer( );
 
@@ -50,32 +54,60 @@ Page.prototype.fetch = function( ) {
   return dfd.promise;
 };
 
+/**
+ * @returns {request}
+ * @public
+ */
 Page.prototype.getRequest = function( ) {
   return this._request;
 };
 
+/**
+ * @returns {string}
+ * @public
+ */
 Page.prototype.getBody = function( ) {
   return this._body;
 };
 
+/**
+ * @returns {boolean}
+ * @public
+ */
 Page.prototype.isFetched = function( ) {
   return this._isFetched;
 };
 
+/**
+ * @returns {boolean}
+ * @public
+ */
 Page.prototype.isRunning = function( ) {
   return this._isRunning;
 };
 
+/**
+ * @returns {number} Time it took to finish the request in milliseconds.
+ * @public
+ */
 Page.prototype.getTimeToFinish = function( ) {
   if( this._startTime && this._endTime )
     return this._endTime - this._startTime;
-  return null;
+  return -1;
 };
 
+/**
+ * @returns {urlObj}
+ * @public
+ */
 Page.prototype.getUrl = function( ) {
   return this._url;
 };
 
+/**
+ * @returns {number} Number of fetches that's been called.
+ * @public
+ */
 Page.prototype.getAttempts = function( ) {
   return this._attempts;
 };

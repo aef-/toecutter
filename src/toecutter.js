@@ -6,7 +6,6 @@ var _       = require( 'lodash' ),
     debug   = require( 'debug' )( 'toecutter' ),
     EventEmitter = require( 'events' ).EventEmitter;
 
-// TOECUTTER RUNNER
 function ToeCutter( opts ) {
   this.options = {
     retries: 3,
@@ -29,6 +28,11 @@ _.extend( ToeCutter, helper );
 
 util.inherits( ToeCutter, EventEmitter );
 
+/**
+ * Queue up a url or an array of urls. Provides *no* checks.
+ * @param {string|string[]} url
+ * @public
+ */
 ToeCutter.prototype.queue = function( url ) {
   if( typeof url === "string" )
     this._queue.push( url );
@@ -36,6 +40,10 @@ ToeCutter.prototype.queue = function( url ) {
     this._queue.concat( url );
 };
 
+/**
+ * Start the crawling the queue.
+ * @public
+ */
 ToeCutter.prototype.start = function( ) {
   var self = this;
 
@@ -44,11 +52,20 @@ ToeCutter.prototype.start = function( ) {
     self.run( );
   }, this.options.timeBetweenRequests );
 };
- 
+
+/**
+ * Finish any requests and stop running.
+ * @public
+ */
 ToeCutter.prototype.stop = function( ) {
   clearInterval( this._requestTimeoutId );
 };
 
+/**
+ * Run either the passed URL or the next in queue.
+ * @param {string} [url]
+ * @public
+ */
 ToeCutter.prototype.run = function( url ) {
   var self = this,
       page;
@@ -75,6 +92,9 @@ ToeCutter.prototype.run = function( url ) {
   }
 };
 
+/**
+ * @private
+ */
 ToeCutter.prototype.onFetchFail = function( page, err ) {
   var self = this;
 
@@ -84,6 +104,9 @@ ToeCutter.prototype.onFetchFail = function( page, err ) {
   }, this.options.timeBetweenRetry );
 };
 
+/**
+ * @private
+ */
 ToeCutter.prototype.onFetchDone = function( page ) {
   var self = this;
   this.emit( 'fetch', page );

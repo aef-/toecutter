@@ -23,8 +23,8 @@ A little Node spider.
 
 #### Events
   * fetch
+  * fail
   * start.request
-  * end.request
 
 ### Page
 ```page``` is passed to each event.
@@ -32,22 +32,21 @@ A little Node spider.
   * isFetched( )
   * isRunning( )
   * getTimeToFinish( )
-  * getLinks( )
   * getUrl( )
   * getAttempts( )
-  * $ - instance of [Cheerio](https://github.com/cheeriojs/cheerio) for DOM manipulation
 
 
 ## Examples
 See [examples](https://github.com/aef-/toecutter/tree/develop/examples).
 
 ## TODO
-  * Make url finding more configurable.
+  * Documentation!
+  * Add queuing method which cleans/resolves the URL (checkout cheerio example).
   * Throttling system.
   * Tests!
   * Add support for robot.txt
   * Option to run synchronously up to N sites
-  * Concurrency support
+  * Multi-core concurrency support
   * Add support for link depth
   * Better failure support options/handling of success/fails.
   * Ability to save and load links traversed and queue

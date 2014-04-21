@@ -5,8 +5,9 @@ var parse   = require( 'url' ).parse,
 
 module.exports = {
   /**
-   * @param url {String|URL}
-   * @return {Boolean}
+   * Will check a string or a URL object if it's a fully formed URL.
+   * @param {string|urlObj} url
+   * @return {boolean}
    */
   isUrl: function( url ) {
     if( !url )
@@ -21,9 +22,9 @@ module.exports = {
   },
 
   /**
-   * normalizes the a URN (resolves path/to/../) 
-   * @param url {String|URL}
-   * @return {URL}
+   * normalizes the a URL (resolves path/to/../) 
+   * @param {string|urlObj} url
+   * @return {urlObj}
    */
   normalizeUrl: function( url ) {
     if( typeof url === "string" )
@@ -40,9 +41,9 @@ module.exports = {
   },
 
   /**
-   * Checks whether a URL is just a URN and adds missing properties if so.
-   * @param url {String|URL}
-   * @return {URL}
+   * Checks whether a URL is just pathname and adds missing properties if so.
+   * @param {string|urlObj} url
+   * @return {urlObj}
    */
   relativeTo: function( protocol, hostname, url ) {
     if( typeof url === "string" )
