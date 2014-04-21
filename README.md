@@ -7,11 +7,10 @@ A little Node spider.
 ```
   //Defaults are listed
   ToeCutter( {
-    retires: 3 //times to retry a site should it not return 200,
+    retries: 3 //times to retry a site should it not return 200,
     timeBetweenRetry: 5000, //time in ms between retry for failed requests
-    timeBetweenRequests: 5000, //time in ms between running the next link queued
-    goOutside: false, //follow outgoing links
-    requestOpts: { } //see [[node-request]](https://github.com/mikeal/request)
+    timeBetweenRequests: 1000, //time in ms between running the next link queued
+    requestOpts: { } //see [node-request](https://github.com/mikeal/request)
   } );
 ```
 
@@ -36,37 +35,14 @@ A little Node spider.
   * getLinks( )
   * getUrl( )
   * getAttempts( )
-  * $ - instance of [[Cheerio]](https://github.com/cheeriojs/cheerio) for DOM manipulation
+  * $ - instance of [Cheerio](https://github.com/cheeriojs/cheerio) for DOM manipulation
 
 
 ## Examples
-```
-var tc = new ToeCutter( {
-  timeBetweenRequests: 1000
-} );
-
-tc.queue( [ 'http://yahoo.com' ] );
-
-tc.on( 'fetch', function( page ) {
-  console.info( "Title: %s", page.$( 'title' ) );
-  console.info( "Page took %d seconds to finish", page.getTimeToFinish( ) / 1000 );
-} );
-
-//You can also use something like trumpet to parse streams...
-tc.on( 'start.request', function( page ) {
-  var length = 0;
-  page.getRequest( ).pipe( through( function( data ) {
-    length += data.length;
-    if( length >= 3000 )
-      page.getRequest( ).abort( );
-  } ) );
-} );
-```
-
+See [examples](https://github.com/aef-/toecutter/tree/develop/examples).
 
 ## TODO
   * Make url finding more configurable.
-  * Maybe remove cheerio and link finding.
   * Throttling system.
   * Tests!
   * Add support for robot.txt

@@ -11,12 +11,8 @@ function ToeCutter( opts ) {
   this.options = {
     retries: 3,
     timeBetweenRetry: 5000, //ms
-    timeBetweenRequests: 5000, //ms
-    depth: null,
-    goOutside: false, //traverse outgoing links
-    obeyRobots: false,
+    timeBetweenRequests: 1000, //ms
     requestOpts: {
-
     }
   }; 
 
@@ -29,13 +25,15 @@ function ToeCutter( opts ) {
   this._queue = [ ];
 };
 
+_.extend( ToeCutter, helper );
+
 util.inherits( ToeCutter, EventEmitter );
 
 ToeCutter.prototype.queue = function( url ) {
   if( typeof url === "string" )
     this._queue.push( url );
-  else
-    _.each( url, this.queue, this );
+  else if( util.isArray( url ) )
+    this._queue.concat( url );
 };
 
 ToeCutter.prototype.start = function( ) {
@@ -60,7 +58,7 @@ ToeCutter.prototype.run = function( url ) {
   if( !url )
     return;
 
-  url = helper.normalizeUrl( url );
+  url = helper.formatUrl( helper.normalizeUrl( url ) );
 
   if( !this._cache[ url ] )
     page = this._cache[ url ] = new Page( { url: url } );
@@ -79,8 +77,8 @@ ToeCutter.prototype.run = function( url ) {
 
 ToeCutter.prototype.onFetchFail = function( page, err ) {
   var self = this;
-  this.emit( 'fail', page );
-  this.emit( 'end.request', page );
+
+  this.emit( 'fail', page, err );
   setTimeout( function( ) {
     self.run( page.getUrl( ) );
   }, this.options.timeBetweenRetry );
@@ -89,8 +87,6 @@ ToeCutter.prototype.onFetchFail = function( page, err ) {
 ToeCutter.prototype.onFetchDone = function( page ) {
   var self = this;
   this.emit( 'fetch', page );
-  this.queue( page.getLinks( ) );
-  this.emit( 'end.request', page );
 };
 
 module.exports = ToeCutter;
