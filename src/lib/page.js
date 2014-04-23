@@ -4,9 +4,16 @@ var _       = require( 'lodash' ),
     request = require( 'request' );
 
 
+/**
+ * @param opts {object}
+ * @param opts.url {string}
+ * @param opts.requestOpts {object} See [node-request](https://github.com/mikeal/request).
+ * @constructor
+ * @private
+ */
 var Page = function( opts ) {
-  this.options = { 
-    goOutside: false
+  this.options = {
+    requestOpts: { }
   };
 
   _.assign( this.options, opts );
@@ -35,7 +42,7 @@ Page.prototype.fetch = function( ) {
   this._isRunning = true;
   this._startTime = Date.now( );
 
-  this._request = request( this._url.href, this.options, function( err, resp, body ) {
+  this._request = request( this._url.href, this.options.requestOpts, function( err, resp, body ) {
     self._endTime = Date.now( );
     if( err )
       dfd.reject( new Error( err ), self );

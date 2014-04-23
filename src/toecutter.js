@@ -6,16 +6,25 @@ var _       = require( 'lodash' ),
     debug   = require( 'debug' )( 'toecutter' ),
     EventEmitter = require( 'events' ).EventEmitter;
 
-function ToeCutter( opts ) {
+/**
+ * @param options {object}
+ * @param options.retries {number} Number of attempts to retry a site should the request fail (either through error, timeout or non-200 status).
+ * @param options.timeBetweenRetry {number} Time in milliseconds between retry for failed requests.
+ * @param options.timeBetweenRequests {number} Time in milliseconds between running queued items.
+ * @param options.requestOptions {object} See [node-request](https://github.com/mikeal/request).
+ * @public
+ * @constructor
+ */
+function ToeCutter( options ) {
   this.options = {
     retries: 3,
     timeBetweenRetry: 5000, //ms
     timeBetweenRequests: 1000, //ms
-    requestOpts: {
+    requestOptions: {
     }
   }; 
 
-  _.assign( this.options, opts );
+  _.assign( this.options, options );
 
   this._requestTimeoutId = null;
 
@@ -30,7 +39,7 @@ util.inherits( ToeCutter, EventEmitter );
 
 /**
  * Queue up a url or an array of urls. Provides *no* checks.
- * @param {string|string[]} url
+ * @param {(string|string[])} url
  * @public
  */
 ToeCutter.prototype.queue = function( url ) {
