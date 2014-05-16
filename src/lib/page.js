@@ -1,3 +1,5 @@
+/* This code is being used in [ToeCutter](https://github.com/aef-/toecutter) */
+
 var _       = require( 'lodash' ),
     helper  = require( './helper' ),
     Q       = require( 'q' ),
@@ -5,9 +7,9 @@ var _       = require( 'lodash' ),
 
 
 /**
- * @param opts {object}
- * @param opts.url {string}
- * @param opts.requestOpts {object} See [node-request](https://github.com/mikeal/request).
+ * @param {object} opts
+ * @param {string} opts.url 
+ * @param {object} opts.requestOpts See [node-request](https://github.com/mikeal/request).
  * @constructor
  * @private
  */

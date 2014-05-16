@@ -50,7 +50,7 @@ ToeCutter.prototype.queue = function( url ) {
 };
 
 /**
- * Start the crawling the queue.
+ * Start crawling the queue.
  * @public
  */
 ToeCutter.prototype.start = function( ) {
@@ -102,6 +102,7 @@ ToeCutter.prototype.run = function( url ) {
 };
 
 /**
+ * @emits ToeCutter#event:error
  * @private
  */
 ToeCutter.prototype.onFetchFail = function( page, err ) {
@@ -114,6 +115,7 @@ ToeCutter.prototype.onFetchFail = function( page, err ) {
 };
 
 /**
+ * @emits ToeCutter#event:fetch
  * @private
  */
 ToeCutter.prototype.onFetchDone = function( page ) {
