@@ -45,4 +45,5 @@ tc.on( 'start.request', function( page ) {
 tc.on( 'end.request', function( page ) {
   console.info( "Ended: ", page.getUrl( ).href );
 } );
+
 tc.start( );

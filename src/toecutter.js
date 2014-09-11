@@ -46,7 +46,7 @@ ToeCutter.prototype.queue = function( url ) {
   if( typeof url === "string" )
     this._queue.push( url );
   else if( util.isArray( url ) )
-    this._queue.concat( url );
+    this._queue = this._queue.concat( url );
 };
 
 /**
