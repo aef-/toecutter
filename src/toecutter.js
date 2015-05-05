@@ -20,16 +20,24 @@ function ToeCutter( options ) {
     retries: 3,
     timeBetweenRetry: 5000, //ms
     timeBetweenRequests: 1000, //ms
+    throttle: 500000,
+
     requestOptions: {
     }
   }; 
 
   _.assign( this.options, options );
 
-  this._requestTimeoutId = null;
+  this._requestTimeout;
+  this._throttleTimeout;
+  this._bytesReceived = 0;
+  this._isPaused = false;
+  this._timeElapse; //s
+  this._startTime; //s
+  this._endTime; //s
 
-  this._pages = [ ];
-  this._cache = { };
+  this._pages = { };
+  this._pagesRunning = { };
   this._queue = [ ];
 };
 
@@ -54,12 +62,13 @@ ToeCutter.prototype.queue = function( url ) {
  * @public
  */
 ToeCutter.prototype.start = function( ) {
-  var self = this;
-
+  this._startTime = new Date( );
   this.run( );
-  this._requestTimeoutId = setInterval( function( ) {
-    self.run( );
-  }, this.options.timeBetweenRequests );
+
+  this._throttleTimeout = setTimeout( this._checkThrottle.bind( this ), 100 );
+
+  this._requestTimeout = setTimeout( this.run.bind( this ), 
+                                      this.options.timeBetweenRequests );
 };
 
 /**
@@ -67,8 +76,63 @@ ToeCutter.prototype.start = function( ) {
  * @public
  */
 ToeCutter.prototype.stop = function( ) {
-  clearInterval( this._requestTimeoutId );
+  this._endTime = new Date( );
+  clearTimeout( this._throttleTimeout );
+  this._bytesDownloaded = 0;
+  clearTimeout( this._requestTimeout );
 };
+
+/**
+ * Pauses all requests and crawl
+ * @public
+ */
+ToeCutter.prototype.pause = function( ) {
+  clearTimeout( this._requestTimeout);
+  if( this.isPaused( ) )
+    return;
+
+  this._isPaused = true;
+
+  for( i in this._pagesRunning ) {
+    if( !this._pagesRunning.hasOwnProperty( i ) )
+      continue;
+
+    page = this._pagesRunning[ i ];
+    page.getRequest( ).pause( );
+  }
+
+};
+
+/**
+ * @public
+ */
+ToeCutter.prototype.isPaused = function( ) {
+  return this._isPaused;
+};
+
+/**
+ * Resumes all requests and crawl
+ * @public
+ */
+ToeCutter.prototype.resume = function( ) {
+  if( !this.isPaused( ) )
+    return;
+
+  this._isPaused = false;
+
+  for( i in this._pagesRunning ) {
+    if( !this._pagesRunning.hasOwnProperty( i ) )
+      continue;
+
+    page = this._pagesRunning[ i ];
+    page.getRequest( ).resume( );
+  }
+
+  clearTimeout( this._requestTimeout );
+  this._requestTimeout = setTimeout( this.run.bind( this ), 
+                                      this.options.timeBetweenRequests );
+};
+
 
 /**
  * Run either the passed URL or the next in queue.
@@ -86,19 +150,28 @@ ToeCutter.prototype.run = function( url ) {
 
   url = helper.formatUrl( helper.normalizeUrl( url ) );
 
-  if( !this._cache[ url ] )
-    page = this._cache[ url ] = new Page( { url: url } );
+  if( !this._pages[ url ] ) {
+    page = this._pages[ url ] = new Page( _.merge( { url: url }, 
+                                                  this.options.pageOptions ) );
+
+    page.on( "data.page", this._onPageData.bind( this ) );
+  }
   else
-    page = this._cache[ url ];
+    page = this._pages[ url ];
 
   if( !page.isRunning( ) && !page.isFetched( ) ) {
     if( page.getAttempts( ) < this.options.retries ) {
+      this._pagesRunning[ url ] = page;
       page.fetch( )
-          .then( _.bind( this.onFetchDone, this ), 
-                 _.bind( this.onFetchFail, this, page ) );
+          .then( this.onFetchDone.bind( this ), 
+                 this.onFetchFail.bind( this, page ) );
       this.emit( 'start.request', page );
     }
   }
+
+  clearTimeout( this._requestTimeout );
+  this._requestTimeout = setTimeout( this.run.bind( this ), 
+                                      this.options.timeBetweenRequests );
 };
 
 /**
@@ -107,6 +180,8 @@ ToeCutter.prototype.run = function( url ) {
  */
 ToeCutter.prototype.onFetchFail = function( page, err ) {
   var self = this;
+
+  delete this._pagesRunning[ page.getUrl( ) ];
 
   this.emit( 'error', page, err );
   setTimeout( function( ) {
@@ -120,7 +195,27 @@ ToeCutter.prototype.onFetchFail = function( page, err ) {
  */
 ToeCutter.prototype.onFetchDone = function( page ) {
   var self = this;
+  delete this._pagesRunning[ page.getUrl( ) ];
   this.emit( 'fetch', page );
+};
+
+/**
+ * @private
+ */
+ToeCutter.prototype._checkThrottle = function( ) {
+  var elapsedTime = (new Date( ).getTime( ) - this._startTime.getTime( )) / 1000,
+      i, pagesLength = 0, page;
+
+  if( this.options.throttle < this._bytesReceived / elapsedTime )
+    this.pause( );
+  else
+    this.resume( );
+
+  this._throttleTimeout = setTimeout( this._checkThrottle.bind( this ), 100 );
+};
+
+ToeCutter.prototype._onPageData = function( data ) {
+  this._bytesReceived += data.length;
 };
 
 module.exports = ToeCutter;
