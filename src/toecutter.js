@@ -12,6 +12,7 @@ var _       = require( 'lodash' ),
  * @param options.timeBetweenRetry {number} Time in milliseconds between retry for failed requests.
  * @param options.timeBetweenRequests {number} Time in milliseconds between running queued items.
  * @param options.requestOptions {object} See [node-request](https://github.com/mikeal/request).
+ * @param options.throttle {object} Throttle download rate at bytes/second. Defaults to 500000.
  * @public
  * @constructor
  */
@@ -20,7 +21,7 @@ function ToeCutter( options ) {
     retries: 3,
     timeBetweenRetry: 5000, //ms
     timeBetweenRequests: 1000, //ms
-    throttle: 500000,
+    throttle: 500000, //bytes/s
 
     requestOptions: {
     }
@@ -214,6 +215,9 @@ ToeCutter.prototype._checkThrottle = function( ) {
   this._throttleTimeout = setTimeout( this._checkThrottle.bind( this ), 100 );
 };
 
+/**
+ * @private
+ */
 ToeCutter.prototype._onPageData = function( data ) {
   this._bytesReceived += data.length;
 };

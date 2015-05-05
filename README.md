@@ -7,29 +7,72 @@ A little Node spider.
 
 ### ToeCutter(options)
 
-* `retries` - Number of attempts to retry a site should the request fail (either through error, timeout or non-200 status).
-* `timeBetweenRetry` - Time in milliseconds between retry for failed requests.
-* `timeBetweenRequests` - Time in milliseconds between running queued items.
-* `requestOptions` - See [node-request](https://github.com/mikeal/request).
+* `options` - {object}
+* `options.retries` - {number} Number of attempts to retry a site should the request fail (either through error, timeout or non-200 status).
+* `options.timeBetweenRetry` - {number} Time in milliseconds between retry for failed requests.
+* `options.timeBetweenRequests` - {number} Time in milliseconds between running queued items.
+* `options.requestOptions` - {object} See [node-request](https://github.com/request/request).
+* `options.throttle` - {object} Throttle download rate at bytes/second. Defaults to 500000.
 
 #### queue(url)
 
 Queue up a url or an array of urls. Provides *no* checks.
 
-* `url` - *string|string[]* Can be array or string, must be proper URL.
+* `url`
 
 #### start()
+
+Start crawling the queue.
+
 #### stop()
+
+Finish any requests and stop running.
+
+#### pause()
+
+Pauses all requests and crawl
+
+#### isPaused()
+
+#### resume()
+
+Resumes all requests and crawl
+
 #### run(url)
 
-### Page(options)
+Run either the passed URL or the next in queue.
+
+#### onFetchFail(page, err)
+
+#### onFetchDone(page)
+
+### Page(opts)
+
+* `opts`
+* `opts.throttle`
+* `opts.url`
+* `opts.requestOpts` - See [node-request](https://github.com/mikeal/request).
+
+#### fetch()
 
 #### getRequest()
+
+#### getBody()
+
 #### isFetched()
-#### isRunning
+
+#### isRunning()
+
 #### getTimeToFinish()
+
 #### getUrl()
+
 #### getAttempts()
+
+#### getBytesPerSecond()
+
+#### getBytesReceived()
+
 
 ## Examples
 See [examples](https://github.com/aef-/toecutter/tree/develop/examples).
@@ -37,7 +80,6 @@ See [examples](https://github.com/aef-/toecutter/tree/develop/examples).
 ## TODO
 * Documentation!
 * Add queuing method which cleans/resolves the URL (checkout cheerio example).
-* Throttling system.
 * Tests!
 * Add support for robot.txt
 * Option to run synchronously up to N sites

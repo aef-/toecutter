@@ -1,1 +1,1 @@
-module.exports = require( './lib/toecutter' );
+module.exports = require( './src/toecutter' );
