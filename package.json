@@ -17,10 +17,11 @@
   },
   "homepage": "https://github.com/aef-/toecutter",
   "dependencies": {
-    "cheerio": "~0.14.0",
+    "cheerio": "^0.14.0",
     "lodash": "~2.4.1",
+    "q": "~1.0.1",
     "request": "^2.34.0",
-    "q": "~1.0.1"
+    "toecutter": "git://github.com/aef-/toecutter.git#5177077c09829ad392c58da5233a987b826c4ae3"
   },
   "devDependencies": {
     "debug": "~0.8.0",

@@ -3,8 +3,9 @@ var ToeCutter = require( '../../src/toecutter' ),
 
 describe( "ToeCutter", function( ) {
   var tc;
+
   beforeEach( function( ) {
-    var tc = new ToeCutter( {
+    tc = new ToeCutter( {
     } );
   } );
 

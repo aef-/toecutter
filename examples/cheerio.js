@@ -1,4 +1,4 @@
-var ToeCutter = require( '../src/toecutter' ),
+var ToeCutter = require( 'toecutter' ),
     _         = require( 'lodash' ),
     parse     = require( 'url' ).parse,
     cheerio   = require( 'cheerio' );

@@ -22,6 +22,7 @@ function ToeCutter( options ) {
     timeBetweenRetry: 5000, //ms
     timeBetweenRequests: 1000, //ms
     throttle: 500000, //bytes/s
+    cachePageObjects: true,
 
     requestOptions: {
     }
@@ -151,13 +152,14 @@ ToeCutter.prototype.run = function( url ) {
 
   url = helper.formatUrl( helper.normalizeUrl( url ) );
 
+
   if( !this._pages[ url ] ) {
-    page = this._pages[ url ] = new Page( _.merge( { url: url }, 
-                                                  this.options.pageOptions ) );
+    page =  new Page( _.merge( { url: url }, 
+                this.options.pageOptions ) );
 
     page.on( "data.page", this._onPageData.bind( this ) );
   }
-  else
+  else if( this.options.cachePageObjects )
     page = this._pages[ url ];
 
   if( !page.isRunning( ) && !page.isFetched( ) ) {
