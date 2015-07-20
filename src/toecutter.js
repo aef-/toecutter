@@ -55,6 +55,8 @@ util.inherits( ToeCutter, EventEmitter );
 ToeCutter.prototype.queue = function( url ) {
   if( typeof url === "string" )
     this._queue.push( url );
+  else if( url.hasOwnProperty( "url" ) )
+    this._queue.push( url );
   else if( util.isArray( url ) )
     this._queue = this._queue.concat( url );
 };
@@ -69,8 +71,7 @@ ToeCutter.prototype.start = function( ) {
 
   this._throttleTimeout = setTimeout( this._checkThrottle.bind( this ), 100 );
 
-  this._requestTimeout = setTimeout( this.run.bind( this ), 
-                                      this.options.timeBetweenRequests );
+  this.startAuto( );
 };
 
 /**
@@ -130,9 +131,14 @@ ToeCutter.prototype.resume = function( ) {
     page.getRequest( ).resume( );
   }
 
+  this.startAuto( );
+};
+
+ToeCutter.prototype.startAuto = function( ) {
   clearTimeout( this._requestTimeout );
   this._requestTimeout = setTimeout( this.run.bind( this ), 
-                                      this.options.timeBetweenRequests );
+                                    this.options.timeBetweenRequests );
+
 };
 
 
@@ -143,15 +149,19 @@ ToeCutter.prototype.resume = function( ) {
  */
 ToeCutter.prototype.run = function( url ) {
   var self = this,
-      page;
+      page, passedArgs;
 
   url = url || this._queue.shift( );
 
   if( !url )
     return;
 
-  url = helper.formatUrl( helper.normalizeUrl( url ) );
-
+  if( typeof url === "string" )
+    url = helper.formatUrl( helper.normalizeUrl( url ) );
+  else if( url.hasOwnProperty( "url" ) ) {
+    url = helper.formatUrl( helper.normalizeUrl( url.url ) );
+    passedArgs = url.passedArgs;
+  }
 
   if( !this._pages[ url ] ) {
     page =  new Page( _.merge( { url: url }, 
@@ -166,27 +176,25 @@ ToeCutter.prototype.run = function( url ) {
     if( page.getAttempts( ) < this.options.retries ) {
       this._pagesRunning[ url ] = page;
       page.fetch( )
-          .then( this.onFetchDone.bind( this ), 
-                 this.onFetchFail.bind( this, page ) );
+          .then( this.onFetchDone.bind( this, page, passedArgs ), 
+                 this.onFetchFail.bind( this, page, passedArgs ) );
       this.emit( 'start.request', page );
     }
   }
 
-  clearTimeout( this._requestTimeout );
-  this._requestTimeout = setTimeout( this.run.bind( this ), 
-                                      this.options.timeBetweenRequests );
+  this.startAuto( );
 };
 
 /**
  * @emits ToeCutter#event:error
  * @private
  */
-ToeCutter.prototype.onFetchFail = function( page, err ) {
+ToeCutter.prototype.onFetchFail = function( page, passedArgs, err ) {
   var self = this;
 
   delete this._pagesRunning[ page.getUrl( ) ];
 
-  this.emit( 'error', page, err );
+  ToeCutter.prototype.emit.apply( this, [ 'error', page ].concat( passedArgs, err ) );
   setTimeout( function( ) {
     self.run( page.getUrl( ) );
   }, this.options.timeBetweenRetry );
@@ -196,10 +204,10 @@ ToeCutter.prototype.onFetchFail = function( page, err ) {
  * @emits ToeCutter#event:fetch
  * @private
  */
-ToeCutter.prototype.onFetchDone = function( page ) {
+ToeCutter.prototype.onFetchDone = function( page, passedArgs ) {
   var self = this;
   delete this._pagesRunning[ page.getUrl( ) ];
-  this.emit( 'fetch', page );
+  ToeCutter.prototype.emit.apply( this, [ 'fetch', page ].concat( passedArgs ) );
 };
 
 /**
