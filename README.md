@@ -46,6 +46,13 @@ Run either the passed URL or the next in queue.
 
 #### onFetchDone(page)
 
+#### Events
+
+* "fetch" (page) - on successful fetch
+* "error" (page, err) - on error (either thrown or status)
+* "start.request" (page) - when the request is started
+
+  
 ### Page(opts)
 
 * `opts`
