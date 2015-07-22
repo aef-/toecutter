@@ -153,14 +153,15 @@ ToeCutter.prototype.run = function( url ) {
 
   url = url || this._queue.shift( );
 
-  if( !url )
-    return;
-
   if( typeof url === "string" )
     url = helper.formatUrl( helper.normalizeUrl( url ) );
-  else if( url.hasOwnProperty( "url" ) ) {
+  else if( url && url.hasOwnProperty( "url" ) ) {
+    passedArgs = url.args;
     url = helper.formatUrl( helper.normalizeUrl( url.url ) );
-    passedArgs = url.passedArgs;
+  }
+  else {
+    this.startAuto( );
+    return;
   }
 
   if( !this._pages[ url ] ) {
